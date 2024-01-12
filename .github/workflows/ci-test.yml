@@ -23,7 +23,9 @@ jobs:
         with:
           php-version: '7.1'
           extensions: 'mbstring, zip'
-
+      - name: Update Composer
+        run: composer self-update --1
+        
       - name: Install Composer Dependencies
         run: composer install --no-interaction --no-progress --prefer-dist
 
