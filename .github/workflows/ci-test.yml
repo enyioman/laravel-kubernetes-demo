@@ -4,13 +4,33 @@ on:
   push:
     branches:
       - master
-    tags:
-      - 'v*.*.*'
   pull_request:
     branches:
       - master
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '7.4'
+          extensions: 'mbstring, zip'
+
+      - name: Update Composer
+        run: composer self-update --1
+
+      - name: Install Composer Dependencies
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Run PHPUnit Tests
+        run: vendor/bin/phpunit
+
   build:
     runs-on: ubuntu-latest
 
@@ -23,17 +43,17 @@ jobs:
         with:
           php-version: '7.1'
           extensions: 'mbstring, zip'
+
       - name: Update Composer
         run: composer self-update --1
-        
+
       - name: Install Composer Dependencies
         run: composer install --no-interaction --no-progress --prefer-dist
 
       - name: Build Docker Image
         run: |
           docker build -t ${{secrets.DOCKER_USER}}/laravel-kubernetes-demo:latest .
-          docker tag ${{secrets.DOCKER_USER}}/laravel-kubernetes-demo:latest ${{secrets.DOCKER_USER}}/laravel-kubernetes-demo:${{ steps.timeseries.outputs.release }}
-
+          docker tag ${{secrets.DOCKER_USER}}/laravel-kubernetes-demo:latest ${{secrets.DOCKER_USER}}/laravel-kubernetes-demo:$(date +%s)
       - name: Login to DockerHub
         uses: docker/login-action@v1
         with:
@@ -43,4 +63,4 @@ jobs:
       - name: Push Docker Image
         run: |
           docker push ${{secrets.DOCKER_USER}}/laravel-kubernetes-demo:latest
-          docker push ${{secrets.DOCKER_USER}}/laravel-kubernetes-demo:${{ steps.timeseries.outputs.release }}
+          docker push ${{secrets.DOCKER_USER}}/laravel-kubernetes-demo:$(date +%s)
