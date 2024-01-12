@@ -104,7 +104,7 @@
     <div class="content">
         <img src="/img/k8s-logo-horizontal_color.png" alt="Learn K8s Logo">
         <div class="title m-b-md">
-            Demo PHP Application
+            Laravel App Deployment To Kubernetes
         </div>
 
         <div class="links">
