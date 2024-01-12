@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: laravel-kubernetes-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: laravel-kubernetes-demo
+  template:
+    metadata:
+      labels:
+        app: laravel-kubernetes-demo
+    spec:
+      containers:
+      - name: laravel-container
+        image: fynewily/laravel-kubernetes-demo
+        ports:
+        - containerPort: 80
+        env:
+        - name: APP_KEY
+          value: "base64:cUPmwHx4LXa4Z25HhzFiWCf7TlQmSqnt98pnuiHmzgY="
