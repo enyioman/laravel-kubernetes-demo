@@ -21,7 +21,7 @@ jobs:
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '7.0'
+          php-version: '7.1'
           extensions: 'mbstring, zip'
 
       - name: Install Composer Dependencies
