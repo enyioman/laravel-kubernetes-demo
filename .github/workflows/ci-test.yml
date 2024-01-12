@@ -1,37 +1,44 @@
-name: Docker Image CI
+name: Laravel App CI
 
 on:
   push:
-    branches: [ "master" ]
+    branches:
+      - master
     tags:
       - 'v*.*.*'
   pull_request:
-    branches: [ "master" ]
+    branches:
+      - master
 
 jobs:
-
   build:
-
     runs-on: ubuntu-latest
-    
+
     steps:
-      - uses: actions/checkout@v3
-      - name: Docker login
-        env:
-          DOCKER_USER: ${{secrets.DOCKER_USER}}
-          DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
-        run: |
-          docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
-      - name: Get repository release tag
-        id: timeseries
-        uses: pozetroninc/github-action-get-latest-release@master
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
         with:
-          excludes: prerelease, draft
-          repository: ${{ github.repository }}
-      - name: Build Docker image
+          php-version: '7.0'
+          extensions: 'mbstring, zip'
+
+      - name: Install Composer Dependencies
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Build Docker Image
         run: |
-          docker build --network=host -t ${{secrets.DOCKER_USER}}/MY_REPO:latest -t ${{secrets.DOCKER_USER}}/MY_REPO:${{ steps.timeseries.outputs.release }} .
-      - name: Docker push image
+          docker build -t ${{secrets.DOCKER_USER}}/laravel-kubernetes-demo:latest .
+          docker tag ${{secrets.DOCKER_USER}}/laravel-kubernetes-demo:latest ${{secrets.DOCKER_USER}}/laravel-kubernetes-demo:${{ steps.timeseries.outputs.release }}
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USER }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Push Docker Image
         run: |
-          docker push ${{secrets.DOCKER_USER}}/MY_REPO
-          docker push ${{secrets.DOCKER_USER}}/MY_REPO:${{ steps.timeseries.outputs.release }}
+          docker push ${{secrets.DOCKER_USER}}/laravel-kubernetes-demo:latest
+          docker push ${{secrets.DOCKER_USER}}/laravel-kubernetes-demo:${{ steps.timeseries.outputs.release }}
